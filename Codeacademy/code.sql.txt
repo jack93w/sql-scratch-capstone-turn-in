@@ -1,0 +1,49 @@
+-- Quiz Funnel Q1
+SELECT *
+FROM survey
+LIMIT 10;
+
+-- Quiz Funnel Q2
+SELECT question,
+ COUNT(DISTINCT user_id) AS 'number of responses'
+FROM survey
+GROUP BY 1
+ORDER BY 1;
+
+-- Joined Home Try-on Funnel
+WITH funnel AS (
+	SELECT DISTINCT q.user_id,
+	  h.user_id IS NOT NULL AS 'is_home_try_on',
+	  h.number_of_pairs,
+	  p.user_id IS NOT NULL AS 'is_purchase',
+  	  p.price,
+  	FROM quiz AS 'q'
+	LEFT JOIN home_try_on AS 'h'
+		ON h.user_id = q.user_id
+	LEFT JOIN purchase AS 'p'
+		ON p.user_id = h.user_id)
+
+--Test Funnel to see join is ok
+SELECT * 
+FROM funnel
+LIMIT 10;
+
+-- Test to see conversion rates
+SELECT number_of_pairs,
+SUM(is_home_try_on) AS 'home try on',
+SUM(is_purchase) AS 'purchases'
+FROM funnel
+GROUP BY 1;
+
+-- Function to measure total number of unique visitors
+SELECT COUNT(DISTINCT(user_id)) AS 'Unique Visitors',
+SUM(is_home_try_on) AS ‘Home Try On’,
+SUM(is_purchase) AS ‘Purchases’
+FROM Funnel;
+
+-- Calculate the total amount spent based on A/B Test criteria
+SELECT number_of_pairs AS 'Number of Pairs',
+SUM(is_purchase) AS 'Number of Purchases',
+SUM(price) AS 'Total Spent'
+FROM funnel
+GROUP BY 1;
